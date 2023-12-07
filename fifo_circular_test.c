@@ -16,6 +16,74 @@ test_init(const MunitParameter params[], void* data) {
   return MUNIT_OK;
 }
 
+// Тест для задачи
+// https://kwork.ru/files/uploaded/cf/ce/e9/7c87dac87e/tz.png
+static MunitResult
+test_push_pop_for_OA_task(const MunitParameter params[], void* data) {
+  (void) params;
+
+  CIRC_BUF buf;
+  int capacity = 4;
+  cb_init(&buf, capacity);
+
+  cb_push(&buf, 1.);
+  munit_assert(buf.arr[0] == 1.);
+
+  cb_push(&buf, 2.);
+  munit_assert(buf.arr[1] == 2.);
+
+  cb_push(&buf, 3.);
+  munit_assert(buf.arr[2] == 3.);
+
+  cb_push(&buf, 4.);
+  munit_assert(buf.arr[3] == 4.);
+
+  double val = -1;
+
+  cb_pop(&buf, &val);
+  munit_assert(val == 1.);
+
+  cb_push(&buf, 7.);
+
+  cb_pop(&buf, &val);
+  munit_assert(val == 2.);
+
+  cb_pop(&buf, &val);
+  munit_assert(val == 3.);
+
+  cb_pop(&buf, &val);
+  munit_assert(val == 4.);
+
+  cb_pop(&buf, &val);
+  munit_assert(val == 7.);
+
+  cb_push(&buf, 10);
+  cb_push(&buf, 11);
+  cb_push(&buf, 12);
+  cb_push(&buf, 13);
+
+  cb_pop(&buf, &val);
+  munit_assert(val == 10.);
+
+  cb_pop(&buf, &val);
+  munit_assert(val == 11.);
+
+  cb_push(&buf, 14);
+
+  cb_pop(&buf, &val);
+  munit_assert(val == 12.);
+
+  //munit_assert(cb_push(&buf, 5.) == false);
+  //munit_assert(buf.arr[3] == 4.);
+
+  //munit_assert(cb_push(&buf, 6.) == false);
+  //munit_assert(buf.arr[3] == 4.);
+
+  cb_free(&buf);
+
+  return MUNIT_OK;
+}
+
 static MunitResult
 test_push(const MunitParameter params[], void* data) {
   (void) params;
@@ -109,37 +177,103 @@ test_pop(const MunitParameter params[], void* data) {
 }
 
 static MunitResult
-test_push_circlular(const MunitParameter params[], void* data) {
+test_push_pop_circlular(const MunitParameter params[], void* data) {
     (void) params;
 
     CIRC_BUF buf;
-    double value = 0.;
+    //double value = 0.;
+    int capacity = 4;
+    //int i = 1;
+    cb_init(&buf, capacity);
+
+    cb_push_circ(&buf, 1.);
+    cb_push_circ(&buf, 2.);
+    cb_push_circ(&buf, 3.);
+    cb_push_circ(&buf, 4.);
+    cb_push_circ(&buf, 5.);
+    cb_push_circ(&buf, 6.);
+    cb_push_circ(&buf, 7.);
+    cb_push_circ(&buf, 8.);
+
+    munit_assert_int(buf.arr[0], ==, 5);
+    munit_assert_int(buf.arr[1], ==, 6);
+    munit_assert_int(buf.arr[2], ==, 7);
+    munit_assert_int(buf.arr[3], ==, 8);
+
+    printf("[[ cb_print\n");
+    cb_print(&buf);
+    printf("]] cb_print\n");
+    cb_print_circ(&buf);
+
+    cb_free(&buf);
+
+    return MUNIT_OK;
+}
+
+static MunitResult
+test_push_circlular_and_get(const MunitParameter params[], void* data) {
+    (void) params;
+
+    CIRC_BUF buf;
+    //double value = 0.;
     int capacity = 4;
     int i = 1;
     cb_init(&buf, capacity);
 
-    /*
-    munit_assert(cb_push(&buf, i++) == true);
-    munit_assert(buf.arr[0] == 1.);
+    munit_assert_int(buf.len, ==, 0);
+    cb_push_circ(&buf, 1.);
+    munit_assert_int(buf.len, ==, 1);
+    cb_push_circ(&buf, 2.);
+    munit_assert_int(buf.len, ==, 2);
+    cb_push_circ(&buf, 3.);
+    munit_assert_int(buf.len, ==, 3);
+    cb_push_circ(&buf, 4.);
+    munit_assert_int(buf.len, ==, 4);
+    cb_push_circ(&buf, 5.);
+    munit_assert_int(buf.len, ==, 4);
+    cb_push_circ(&buf, 6.);
+    munit_assert_int(buf.len, ==, 4);
+    cb_push_circ(&buf, 7.);
+    munit_assert_int(buf.len, ==, 4);
+    cb_push_circ(&buf, 8.);
+    munit_assert_int(buf.len, ==, 4);
 
-    value = 0.;
-    munit_assert(value == 0.);
-    munit_assert(cb_pop(&buf, &value) == true);
-    munit_assert(value == 1.);
+    munit_assert_int(buf.arr[0], ==, 5);
+    munit_assert_int(buf.arr[1], ==, 6);
+    munit_assert_int(buf.arr[2], ==, 7);
+    munit_assert_int(buf.arr[3], ==, 8);
 
-    munit_assert(cb_push(&buf, 12) == true);
-    munit_assert(buf.arr[0] == 12);
+    //cb_print(&buf);
+    cb_print_circ(&buf);
 
-    value = 0.;
-    munit_assert(value == 0.);
-    munit_assert(cb_pop(&buf, &value) == true);
-    munit_assert(value == 12.);
+    i = 0;
+    double v = 0.;
+    bool stop = cb_get(&buf, &v, i++);
+    while (!stop) {
+        //v = 0.;
+        printf("stop %s\n", stop ? "true" : "false");
+        printf("get %f\n", v);
+        stop = cb_get(&buf, &v, i++);
+        //printf("stop %s\n", stop ? "true" : "false");
+        //printf("get %f\n", v);
+    }
 
-    value = 0.;
-    munit_assert(value == 0.);
-    munit_assert(cb_pop(&buf, &value) == false);
-    munit_assert(value == 0.);
-    */
+    printf("\n");
+
+    cb_free(&buf);
+
+    return MUNIT_OK;
+}
+
+static MunitResult
+test_push_circlular(const MunitParameter params[], void* data) {
+    (void) params;
+
+    CIRC_BUF buf;
+    //double value = 0.;
+    int capacity = 4;
+    //int i = 1;
+    cb_init(&buf, capacity);
 
     cb_push_circ(&buf, 1.);
     cb_push_circ(&buf, 2.);
@@ -445,9 +579,12 @@ static MunitParameterEnum test_params[] = {
 static MunitTest CIRC_BUF_tests[] = {
   { (char*) "/CIRC_BUF/init", test_init, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
   { (char*) "/CIRC_BUF/push", test_push, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*) "/CIRC_BUF/push_pop_for_OA_task", test_push_pop_for_OA_task, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
   { (char*) "/CIRC_BUF/pop", test_pop, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
   { (char*) "/CIRC_BUF/push_pop_1size", test_push_pop_1size, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
   { (char*) "/CIRC_BUF/push_circular", test_push_circlular, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*) "/CIRC_BUF/push_circular_and_get", test_push_circlular_and_get, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*) "/CIRC_BUF/push_pop_circular", test_push_pop_circlular, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
 };
 
 /* Creating a test suite is pretty simple.  First, you'll need an
