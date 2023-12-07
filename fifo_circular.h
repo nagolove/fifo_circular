@@ -10,14 +10,15 @@ typedef struct CIRC_BUF {
     int i, j, maxlen, len;
 } CIRC_BUF;
 
-extern void cb_init(CIRC_BUF *cb, int maxlen);
-extern void cb_free(CIRC_BUF *cb);
-extern void cb_print(CIRC_BUF *cb);
+void cb_init(CIRC_BUF *cb, int maxlen);
+void cb_free(CIRC_BUF *cb);
+void cb_print(CIRC_BUF *cb);
 // Возвращает истину если значение было добавлено
-extern bool cb_push(CIRC_BUF *cb, double value);
+bool cb_push(CIRC_BUF *cb, double value);
 // Возвращает истину если удалось снять значение
-extern bool cb_pop(CIRC_BUF *cb, double *value);
+bool cb_pop(CIRC_BUF *cb, double *value);
 
 void cb_push_circ(CIRC_BUF *cb, double value);
-void cb_print_circ(CIRC_BUF *cb);
+void cb_print_circ(const CIRC_BUF *cb);
+bool cb_get(CIRC_BUF *cb,  double *v, int index);
 
